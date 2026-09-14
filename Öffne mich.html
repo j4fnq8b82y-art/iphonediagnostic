@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+               viewport-fit=cover">
+
+<title>Device Diagnostic</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #020303;
+    color: #00ff66;
+    font-family: -apple-system, BlinkMacSystemFont, monospace;
+}
+
+body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+}
+
+.screen {
+    min-height: 100dvh;
+    padding:
+        max(25px, env(safe-area-inset-top))
+        20px
+        max(25px, env(safe-area-inset-bottom))
+        20px;
+
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 650px;
+}
+
+h1 {
+    font-size: 25px;
+    margin: 0;
+}
+
+.subtitle {
+    opacity: .6;
+    font-size: 11px;
+    margin-top: 8px;
+}
+
+.panel {
+    margin-top: 25px;
+    border: 1px solid #00ff66;
+    padding: 18px;
+    box-shadow: 0 0 20px rgba(0,255,100,.12);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    background: #050805;
+    border: 1px solid #00ff66;
+    color: #00ff66;
+    font-family: monospace;
+    font-size: 16px;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px;
+    background: #00ff66;
+    color: #001006;
+    border: 0;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button:active {
+    opacity: .7;
+}
+
+.hidden {
+    display: none;
+}
+
+.status {
+    margin-top: 20px;
+    font-size: 13px;
+}
+
+.progress {
+    height: 17px;
+    border: 1px solid #00ff66;
+    margin-top: 12px;
+}
+
+.progressBar {
+    width: 0%;
+    height: 100%;
+    background: #00ff66;
+    box-shadow: 0 0 15px #00ff66;
+}
+
+.percent {
+    text-align: right;
+    margin-top: 5px;
+    font-size: 11px;
+}
+
+.log {
+    height: 150px;
+    overflow: hidden;
+    margin-top: 15px;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.result {
+    margin-top: 20px;
+}
+
+.card {
+    border: 1px solid #00ff66;
+    padding: 13px;
+    margin-top: 9px;
+    background: rgba(0,255,100,.025);
+}
+
+.labelSmall {
+    font-size: 10px;
+    opacity: .55;
+}
+
+.value {
+    margin-top: 5px;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.success {
+    color: #00ff66;
+    margin-top: 20px;
+}
+
+.disclaimer {
+    margin-top: 20px;
+    font-size: 10px;
+    opacity: .45;
+    line-height: 1.5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="screen">
+
+<div class="container">
+
+<h1>DEVICE DIAGNOSTIC</h1>
+
+<div class="subtitle">
+LOCAL DEVICE ANALYSIS // NO DATA UPLOAD
+</div>
+
+<!-- START SCREEN -->
+
+<div class="panel" id="startPanel">
+
+<label>
+IDENTIFICATION NAME
+</label>
+
+<input
+    id="nameInput"
+    type="text"
+    maxlength="40"
+    placeholder="Name eingeben..."
+    autocomplete="off"
+>
+
+<button onclick="startScan()">
+START DIAGNOSTIC
+</button>
+
+<div class="disclaimer">
+Der Name wird nur lokal für diesen Diagnosebericht verwendet.
+</div>
+
+</div>
+
+
+<!-- SCAN SCREEN -->
+
+<div class="panel hidden" id="scanPanel">
+
+<div class="status" id="status">
+Initializing diagnostic engine...
+</div>
+
+<div class="progress">
+<div class="progressBar" id="progressBar"></div>
+</div>
+
+<div class="percent" id="percent">
+0%
+</div>
+
+<div class="log" id="log"></div>
+
+</div>
+
+
+<!-- RESULTS -->
+
+<div class="panel hidden" id="resultPanel">
+
+<div class="success">
+✓ DIAGNOSTIC COMPLETE
+</div>
+
+<div class="result">
+
+<div class="card">
+<div class="labelSmall">
+IDENTIFICATION
+</div>
+<div class="value" id="resultName"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+BROWSER / DEVICE SIGNATURE
+</div>
+<div class="value" id="userAgent"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+LANGUAGE
+</div>
+<div class="value" id="language"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+SCREEN
+</div>
+<div class="value" id="screen"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+VIEWPORT
+</div>
+<div class="value" id="viewport"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+TOUCH SUPPORT
+</div>
+<div class="value" id="touch"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+ORIENTATION
+</div>
+<div class="value" id="orientation"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+NETWORK STATUS
+</div>
+<div class="value" id="network"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+COOKIES
+</div>
+<div class="value" id="cookies"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+LOCAL STORAGE
+</div>
+<div class="value" id="storage"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+CPU THREAD HINT
+</div>
+<div class="value" id="cores"></div>
+</div>
+
+<div class="card">
+<div class="labelSmall">
+BATTERY
+</div>
+<div class="value" id="battery"></div>
+</div>
+
+</div>
+
+<div class="disclaimer">
+Diese Seite zeigt ausschließlich Informationen,
+die der Browser bereitstellt. Private iOS-Daten wie
+Kontakte, Telefonnummern, Fotos oder Dateien werden
+nicht ausgelesen.
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function startScan() {
+
+    const name =
+        document.getElementById("nameInput")
+        .value.trim();
+
+    if (!name) {
+
+        alert("Bitte zuerst einen Namen eingeben.");
+
+        return;
+    }
+
+    document.getElementById("resultName")
+        .textContent = name;
+
+    document.getElementById("startPanel")
+        .classList.add("hidden");
+
+    document.getElementById("scanPanel")
+        .classList.remove("hidden");
+
+    runScan();
+
+}
+
+
+const messages = [
+
+    "Initializing diagnostic engine...",
+    "Checking browser environment...",
+    "Analyzing display subsystem...",
+    "Checking touch interface...",
+    "Analyzing network state...",
+    "Checking storage capabilities...",
+    "Checking browser features...",
+    "Reading available battery information...",
+    "Building diagnostic report..."
+
+];
+
+
+function addLog(text) {
+
+    const log =
+        document.getElementById("log");
+
+    const line =
+        document.createElement("div");
+
+    line.textContent = "> " + text;
+
+    log.appendChild(line);
+
+    while (log.children.length > 9) {
+        log.removeChild(log.firstChild);
+    }
+
+}
+
+
+function runScan() {
+
+    let progress = 0;
+    let messageIndex = 0;
+
+    function step() {
+
+        progress += 1.5;
+
+        if (progress > 100)
+            progress = 100;
+
+        document.getElementById("progressBar")
+            .style.width = progress + "%";
+
+        document.getElementById("percent")
+            .textContent =
+            Math.floor(progress) + "%";
+
+
+        if (
+            messageIndex < messages.length &&
+            progress >=
+            (messageIndex + 1) * 10
+        ) {
+
+            addLog(
+                messages[messageIndex]
+            );
+
+            messageIndex++;
+        }
+
+
+        if (progress < 100) {
+
+            setTimeout(step, 65);
+
+        } else {
+
+            setTimeout(
+                showResults,
+                600
+            );
+
+        }
+
+    }
+
+    step();
+
+}
+
+
+function showResults() {
+
+    const nav = navigator;
+
+    document.getElementById("userAgent")
+        .textContent =
+        nav.userAgent || "Unavailable";
+
+    document.getElementById("language")
+        .textContent =
+        nav.language || "Unavailable";
+
+    document.getElementById("screen")
+        .textContent =
+        screen.width +
+        " × " +
+        screen.height +
+        " px";
+
+    document.getElementById("viewport")
+        .textContent =
+        window.innerWidth +
+        " × " +
+        window.innerHeight +
+        " px";
+
+    document.getElementById("touch")
+        .textContent =
+        nav.maxTouchPoints > 0
+        ? "YES"
+        : "NO";
+
+    document.getElementById("orientation")
+        .textContent =
+        screen.orientation
+        ? screen.orientation.type
+        : "Unavailable";
+
+    document.getElementById("network")
+        .textContent =
+        nav.onLine
+        ? "ONLINE"
+        : "OFFLINE";
+
+    document.getElementById("cookies")
+        .textContent =
+        nav.cookieEnabled
+        ? "ENABLED"
+        : "DISABLED";
+
+    try {
+
+        document.getElementById("storage")
+            .textContent =
+            typeof localStorage !== "undefined"
+            ? "AVAILABLE"
+            : "UNAVAILABLE";
+
+    } catch {
+
+        document.getElementById("storage")
+            .textContent =
+            "UNAVAILABLE";
+
+    }
+
+    document.getElementById("cores")
+        .textContent =
+        nav.hardwareConcurrency
+        ? nav.hardwareConcurrency +
+          " logical processor hint"
+        : "Unavailable";
+
+    document.getElementById("scanPanel")
+        .classList.add("hidden");
+
+    document.getElementById("resultPanel")
+        .classList.remove("hidden");
+
+    readBattery();
+
+}
+
+
+async function readBattery() {
+
+    const output =
+        document.getElementById("battery");
+
+    if (!navigator.getBattery) {
+
+        output.textContent =
+            "Not available in this browser.";
+
+        return;
+    }
+
+    try {
+
+        const battery =
+            await navigator.getBattery();
+
+        const level =
+            Math.round(
+                battery.level * 100
+            );
+
+        output.textContent =
+            level +
+            "% " +
+            (
+                battery.charging
+                ? "(charging)"
+                : "(not charging)"
+            );
+
+    } catch {
+
+        output.textContent =
+            "Not available.";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
